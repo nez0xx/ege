@@ -48,7 +48,7 @@ class BotIsAdmin(BaseFilter):
             return False
         if not db.get_chat(chat_id=message.chat.id):
             db.add_chat(chat_id=message.chat.id)
-        return (member.status == 'administrator')==True and member.can_delete_messages==True
+        return (member.status == 'administrator') and member.can_delete_messages
 
 
 class FromAdmin(BaseFilter):
@@ -59,4 +59,4 @@ class FromAdmin(BaseFilter):
             member = await bot.GetChatMember(chat_id=message.chat.id, user_id=message.from_user.id)
         except:
             return False
-        return (member.status == 'administrator' or member.status == 'creator')==self.is_admin
+        return (member.status == 'administrator' or member.status == 'creator') == self.is_admin

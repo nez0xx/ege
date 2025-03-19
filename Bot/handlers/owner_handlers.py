@@ -14,12 +14,12 @@ from Bot.markups import ConvertMarkdown, StandartMarkup, RemoveFromStandartMarku
 router = Router()
 
 
-@router.message(Command(commands='admin_help'), ChatType(chat_type='private'))
+@router.message(Command(commands='info_admin'), ChatType(chat_type='private'))
 async def admin_help(message: Message):
     await bot.SendMessage(chat_id=message.from_user.id, text=admin_description)
 
 
-@router.message(Command(commands='users_count'), ChatType(chat_type='private'))
+@router.message(Command(commands='count_subs'), ChatType(chat_type='private'))
 async def count(message: Message):
     await bot.SendMessage(
         chat_id=message.from_user.id,
@@ -27,7 +27,11 @@ async def count(message: Message):
     )
 
 
-@router.message(ContentTypesFilter(content_types="any"), ChatType(chat_type='private'), CommandInMessage(command='/spread'))
+@router.message(
+    ContentTypesFilter(content_types="any"),
+    ChatType(chat_type='private'),
+    CommandInMessage(command='/notificate')
+)
 async def spread(message: Message, text: str, photo: Any, keyboard: list):
     users = db.get_users()
     for user in users:
@@ -53,7 +57,7 @@ async def spread(message: Message, text: str, photo: Any, keyboard: list):
 @router.message(
     ContentTypesFilter(content_types="any"),
     ChatType(chat_type='private'),
-    CommandInMessage(command='/add_button')
+    CommandInMessage(command='/new_btn')
 )
 async def add(message: Message, text: str, photo: Any, keyboard: list):
     title = re.findall('<b>([^<>]*)</b>', text)
@@ -65,7 +69,7 @@ async def add(message: Message, text: str, photo: Any, keyboard: list):
     await bot.SendMessage(chat_id=message.chat.id, text=f'✅Кнопка {title} сохранена', reply_markup=StandartMarkup())
 
 
-@router.message(Command(commands='remove_button'), ChatType(chat_type='private'))
+@router.message(Command(commands='rm_btn'), ChatType(chat_type='private'))
 async def remove(message: Message):
     markup = RemoveFromStandartMarkup()
     if len(markup.inline_keyboard) == 0:

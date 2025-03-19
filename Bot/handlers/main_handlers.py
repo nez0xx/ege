@@ -18,6 +18,20 @@ from Bot.markups import (
 router = Router()
 
 
+@router.message(ContentTypesFilter(
+        content_types=[
+            'new_chat_title', 
+            'new_chat_photo', 
+            'delete_chat_photo', 
+            'pinned_message'
+        ]
+))
+async def start(message: Message):
+    chat_info = db.get_chat(message.chat.id)
+    if chat_info.get('BLOCK_CHANNELS'):
+        return await bot.DeleteMessage(chat_id=message.chat.id, message_id=message.message_id)
+
+
 @router.message(Command(commands=['start', 'info', 'help']), ChatType(chat_type='private'))
 async def start(message: Message):
     user = message.from_user
@@ -87,10 +101,15 @@ async def answer_warning(chat_id: Union[str, int], text: str, time: int):
     BotIsAdmin()
 )
 async def handler(message: Message):
-    print("im working")
+    chat_info = db.get_chat(message.chat.id)
     chat_joined_left = db.get_field('chats', 'JOINED_LEFT', 'CHAT_ID', message.chat.id)
+    for i in dict(message):
+        print(i, dict(message)[i])
+    print("-"*50)
     greeting = db.get_chat_greeting(message.chat.id)
+    print(greeting)
     if greeting and message.new_chat_members:
+        print("im working")
         text, photo, keyboard = greeting['TEXT'], greeting['PHOTO'], greeting['KEYBOARD']
         for member in message.new_chat_members:
             text = text.format(name=mention_url.format(member.id, member.first_name))
@@ -107,6 +126,9 @@ async def handler(message: Message):
                     text=text.format(name=text),
                     reply_markup=ConvertMarkdown(keyboard)
                 )
+
+    if chat_info.get('BLOCK_CHANNELS'):
+        return await bot.DeleteMessage(chat_id=message.chat.id, message_id=message.message_id)
     if chat_joined_left:
         if chat_joined_left.get('JOINED_LEFT'):
             await bot.DeleteMessage(
@@ -124,23 +146,42 @@ async def handler(message: Message):
 async def handler(message: Message):
     chat_info = db.get_chat(message.chat.id)
 
-    usrname = chat_info.get('CHANNEL_ID')
-    if usrname:
+    channels = chat_info.get('CHANNEL_ID')
+    if channels:
+        channels = channels.split()
         try:
-            user = await bot.GetChatMember(chat_id=usrname, user_id=message.from_user.id)
-            if user.status == 'left':
-                await bot.DeleteMessage(chat_id=message.chat.id, message_id=message.message_id)
+            for channel in channels:
+                user = await bot.GetChatMember(chat_id=channel, user_id=message.from_user.id)
+                if user.status == 'left':
+                    await bot.DeleteMessage(chat_id=message.chat.id, message_id=message.message_id)
 
-                return await bot.SendMessage(
-                    chat_id=message.chat.id,
-                    text=f'➕{mention_url.format(message.from_user.id, message.from_user.first_name)}\
-                    , прошу подпишитесь на канал {usrname} чтобы я пропускал ваши сообщения в этот чат!',
-                    reply_markup=ConvertMarkdown(f'[➕Подпишитесь](t.me/{usrname[1:]})')
-                )
+                    markup = []
+                    for i in range(len(channels)):
+                        markup.append(f"[➕Подпишитесь {i+1}](t.me/{channels[i][1:]})")
+
+                    return await bot.SendMessage(
+                        chat_id=message.chat.id,
+                        text=f'➕{mention_url.format(message.from_user.id, message.from_user.first_name)}'
+                             f', чтобы писать в этот чат, подпишитесь на каналы:\n'
+                             f"{'|'.join(channels)}",
+                        reply_markup=ConvertMarkdown(markup)
+                        #reply_markup=ConvertMarkdown(f'[➕Подпишитесь](t.me/{channel[1:]})')
+                    )
 
         except Exception as e:
             print(e)
-    
+    for i in dict(message):
+        print(i, dict(message)[i])
+    if message.forward_date:#message.forward_sender_name or message.forward_from or 
+        if chat_info.get("BLOCK_FORWARD"):
+            print("сырский")
+            await bot.DeleteMessage(chat_id=message.chat.id, message_id=message.message_id)
+            return await answer_warning(
+                message.chat.id,
+                f'{mention_url.format(message.from_user.id, message.from_user.first_name)}, <i>Пересылка сообщений в данном чате запрещена</i>',
+                3
+            )
+
     text = message.text or message.caption or ''
     symbol = chat_info.get('SYMBOL')
     if symbol and text:
@@ -151,7 +192,6 @@ async def handler(message: Message):
                 f'{mention_url.format(message.from_user.id, message.from_user.first_name)}, <i>ваш текст не должен быть длиннее <b>{symbol}</b> символов</i>',
                 3
             )
-    print("123123123123")
     if chat_info.get('BLOCK_CHANNELS') and message.from_user.id < 0:
         return await bot.DeleteMessage(chat_id=message.chat.id, message_id=message.message_id)
 

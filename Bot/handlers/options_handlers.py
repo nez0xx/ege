@@ -32,9 +32,17 @@ async def create_task(timer: dict, Bot: Bot = None):
             )
     else:
         if Bot:
-            await Bot.send_message(chat_id = timer['CHAT_ID'], text = timer['TEXT'], reply_markup=ConvertMarkdown(timer['KEYBOARD']))
+            await Bot.send_message(
+                chat_id=timer['CHAT_ID'],
+                text=timer['TEXT'],
+                reply_markup=ConvertMarkdown(timer['KEYBOARD'])
+            )
         else:
-            await bot.SendMessage(chat_id = timer['CHAT_ID'], text = timer['TEXT'], reply_markup=ConvertMarkdown(timer['KEYBOARD']))
+            await bot.SendMessage(
+                chat_id=timer['CHAT_ID'],
+                text=timer['TEXT'],
+                reply_markup=ConvertMarkdown(timer['KEYBOARD'])
+            )
     await asyncio.sleep(timer['DELAY']*60)
     timer = db.get_chat_timer(timer['CHAT_ID'])
     if timer:
@@ -49,32 +57,88 @@ async def create_task(timer: dict, Bot: Bot = None):
     lambda msg: msg.text.replace('/starton', '').split('@')[-1].strip()
 )
 async def starton(message: Message):
+    text = message.text.replace('/starton', '').split()
+    chat_info = db.get_chat(message.chat.id)
+    channels = chat_info.get('CHANNEL_ID').split()
     try:
-        channel = await bot.GetChat(chat_id='@'+message.text.replace('/starton', '').split('@')[-1].strip())
-        await bot.GetChatAdministrators(chat_id=channel.id)
+        for channel_username in text:
+            channel = await bot.GetChat(chat_id=channel_username)
+            await bot.GetChatAdministrators(chat_id=channel.id)
+            if channel_username not in channels:
+                channels.append(channel_username)
         db.set_chat_value(
             message.chat.id,
             'CHANNEL_ID',
-            '@'+channel.username
+            " ".join(channels)
         )
         await bot.SendMessage(
-            chat_id = message.chat.id,
-            text = f'✅Канал добавлен\n\n▸ для прекращения наберите\n/stopoff'
+            chat_id=message.chat.id,
+            text=f'✅Каналы добавлены\n\n▸ для прекращения наберите\n/stopoff'
         )
     except TelegramForbiddenError:
         await bot.SendMessage(
-            chat_id = message.chat.id,
-            text = f'⛔Бот не добавлен в администраторы данного канала!\n\n▸ Исправьте этот нюанс и попробуйте заново.'
+            chat_id=message.chat.id,
+            text=f'⛔Бот не добавлен в администраторы данного канала!\n\n▸ Исправьте этот нюанс и попробуйте заново.'
         )
 
 
-@router.message(ContentTypesFilter(content_types="any"), ChatType(chat_type=['supergroup', 'group']), CommandInMessage(command='/hello'), BotIsAdmin(), FromAdmin())
+@router.message(
+    Command(commands='stopoff'),
+    ChatType(chat_type=['supergroup', 'group']),
+    BotIsAdmin(),
+    FromAdmin(),
+    lambda msg: msg.text.replace('/stopoff', '').split('@')[-1].strip()
+)
+async def stopoff(message: Message):
+    text = message.text.replace('/stopoff', '').split()
+    chat_info = db.get_chat(message.chat.id)
+    channels = chat_info.get('CHANNEL_ID').split()
+
+    for channel_us in text:
+        if channel_us in channels:
+            channels.remove(channel_us)
+    db.set_chat_value(
+        message.chat.id,
+        'CHANNEL_ID',
+        " ".join(channels)
+    )
+    await bot.SendMessage(
+        chat_id=message.chat.id,
+        text=f'✅Каналы удалены▸ '
+    )
+
+
+@router.message(
+    Command(commands='channels'),
+    ChatType(chat_type=['supergroup', 'group']),
+    BotIsAdmin(),
+    FromAdmin()
+)
+async def stopoff(message: Message):
+    chat_info = db.get_chat(message.chat.id)
+    channels = chat_info.get('CHANNEL_ID').split()
+
+    await bot.SendMessage(
+        chat_id=message.chat.id,
+        text=f'Отслеживаемые каналы:\n{"\n".join(channels)}'
+    )
+
+@router.message(
+    ContentTypesFilter(content_types="any"),
+    ChatType(chat_type=['supergroup', 'group']),
+    CommandInMessage(command='/hello'),
+    BotIsAdmin(),
+    FromAdmin()
+)
 async def hello_on(message: Message, text: str, photo: Any, keyboard: list):
     db.set_greeting(message.chat.id, text, photo=photo, keyboard=';'.join(keyboard))
-    await bot.SendMessage(chat_id = message.chat.id, text = '🟢Установлено приветствие:')
+    for i in dict(message):
+        print(i, dict(message)[i])
+    print("="*50)
+    await bot.SendMessage(chat_id=message.chat.id, text = '🟢Установлено приветствие:')
     if photo:
-        await bot.SendPhoto(chat_id = message.chat.id, caption = text, photo=photo, reply_markup=ConvertMarkdown(keyboard))
-    else: await bot.SendMessage(chat_id = message.chat.id, text = text, reply_markup=ConvertMarkdown(keyboard))
+        await bot.SendPhoto(chat_id=message.chat.id, caption=text, photo=photo, reply_markup=ConvertMarkdown(keyboard))
+    else: await bot.SendMessage(chat_id=message.chat.id, text=text, reply_markup=ConvertMarkdown(keyboard))
 
 
 @router.message(
@@ -154,7 +218,7 @@ async def antiflood(message: Message):
 
 def exctract_commands(message: Message):
     options = {
-        'stopoff': ('❌Канал удален!', lambda chat_id: db.set_chat_value(chat_id, 'CHANNEL_ID', None)),
+        'stopall': ('❌Каналы удалены!', lambda chat_id: db.set_chat_value(chat_id, 'CHANNEL_ID', None)),
         'delhello': ('🔴Приветствие удалено', lambda chat_id: db.delete_greeting(chat_id=chat_id)),
         'dellimit': ('🔴Ограничение символов отключено', lambda chat_id: db.set_chat_value(chat_id, 'SYMBOL', None)),
         'deltimer': ('🔴Рассылка удалена', lambda chat_id: db.delete_timer(chat_id)),
@@ -163,6 +227,8 @@ def exctract_commands(message: Message):
         'delantiflood': ('🔴Ограничение сообщений отключено', lambda chat_id: db.set_chat_value(chat_id, 'ANTIFLOOD', None)),
         'blockchannels': ('🟢Удаление сообщений от имени канала включено', lambda chat_id: db.set_chat_value(chat_id, 'BLOCK_CHANNELS', True)),
         'unblockchannels': ('🔴Удаление сообщений от имени канала отключено', lambda chat_id: db.set_chat_value(chat_id, 'BLOCK_CHANNELS', False)),
+        'forwardoff': ('🟢Удаление пересылаемых сообщений включено', lambda chat_id: db.set_chat_value(chat_id, 'BLOCK_FORWARD', True)),
+        'forwardon': ('🔴Удаление пересылаемых сообщений выключено', lambda chat_id: db.set_chat_value(chat_id, 'BLOCK_FORWARD', False))
     }
     key = next((x for x in list(options.keys()) if message.text.startswith('/'+x)), None)
     return options.get(key)

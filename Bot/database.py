@@ -42,7 +42,8 @@ class DataBase():
                             JOINED_LEFT boolean DEFAULT FALSE,
                             SYMBOL int CHECK (100 <= SYMBOL AND SYMBOL < 4000),
                             ANTIFLOOD int CHECK (2 <= ANTIFLOOD AND ANTIFLOOD <= 10),
-                            BLOCK_CHANNELS boolean DEFAULT FALSE
+                            BLOCK_CHANNELS boolean DEFAULT FALSE,
+                            BLOCK_FORWARD boolean DEFAULT FALSE
                         ); """
         greetings_table = """CREATE TABLE IF NOT EXISTS greetings (
                             CHAT_ID int PRIMARY KEY,
