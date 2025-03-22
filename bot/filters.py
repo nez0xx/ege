@@ -5,7 +5,7 @@ from aiogram.client import bot
 from aiogram.dispatcher.filters import BaseFilter
 from aiogram.types import CallbackQuery, Message
 
-from Bot.config import db, markdown_link_pattern, url_pattern
+from bot.config import db, markdown_link_pattern, url_pattern
 
 
 class ChatType(BaseFilter):

@@ -7,9 +7,9 @@ from aiogram.dispatcher.filters import Command, ContentTypesFilter
 from aiogram.exceptions import TelegramForbiddenError
 from aiogram.types import Message
 
-from Bot.config import db
-from Bot.filters import BotIsAdmin, ChatType, CommandInMessage, FromAdmin
-from Bot.markups import ConvertMarkdown
+from bot.config import db
+from bot.filters import BotIsAdmin, ChatType, CommandInMessage, FromAdmin
+from bot.markups import ConvertMarkdown
 
 router = Router()
 

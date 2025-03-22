@@ -1,10 +1,10 @@
 import asyncio
 from aiogram import Bot, Dispatcher
 
-from Bot.config import BOT_TOKEN, db, description_1
-from Bot.handlers.main_handlers import router as main_router
-from Bot.handlers.options_handlers import router as admin_router, create_task
-from Bot.handlers.owner_handlers import router as owner_router
+from bot.config import BOT_TOKEN, db, description_1
+from bot.handlers.main_handlers import router as main_router
+from bot.handlers.options_handlers import router as admin_router, create_task
+from bot.handlers.owner_handlers import router as owner_router
 
 bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
 dp = Dispatcher()

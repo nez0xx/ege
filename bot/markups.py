@@ -1,6 +1,6 @@
 from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
                            KeyboardButton, ReplyKeyboardMarkup)
-from Bot.config import db, options
+from bot.config import db, options
 from typing import Union
 
 

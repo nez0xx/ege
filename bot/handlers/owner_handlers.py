@@ -7,9 +7,9 @@ from aiogram.dispatcher.filters import Command, ContentTypesFilter
 from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
 from aiogram.types import Message, CallbackQuery
 
-from Bot.config import db, admin_description
-from Bot.filters import ChatType, CommandInMessage
-from Bot.markups import ConvertMarkdown, StandartMarkup, RemoveFromStandartMarkup
+from bot.config import db, admin_description
+from bot.filters import ChatType, CommandInMessage
+from bot.markups import ConvertMarkdown, StandartMarkup, RemoveFromStandartMarkup
 
 router = Router()
 

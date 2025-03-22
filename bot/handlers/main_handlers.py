@@ -6,9 +6,9 @@ from aiogram.client import bot
 from aiogram.dispatcher.filters import Command, ContentTypesFilter
 from aiogram.types import CallbackQuery, Message
 
-from Bot.config import db, description_2, mention_url, options, description_1
-from Bot.filters import BotIsAdmin, ChatType, FromAdmin, ReplyFilter
-from Bot.markups import (
+from bot.config import db, description_2, mention_url, options, description_1
+from bot.filters import BotIsAdmin, ChatType, FromAdmin, ReplyFilter
+from bot.markups import (
     BackMarkup,
     ChatOptionsMarkup,
     ConvertMarkdown,
