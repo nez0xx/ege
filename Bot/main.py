@@ -26,8 +26,7 @@ async def startup():
 async def main():
     startups = asyncio.create_task(startup())
     me = await bot.get_me()
-    if not db.get_reply('✅ Проверка подписки'):
-        db.add_reply(title='✅ Проверка подписки', description=description_1, photo=None, keyboard=f'[➕Добавить в группу](http://t.me/{me.username}?startgroup=new)')
+    #db.add_reply(title='✅ Проверка подписки', description=description_1, photo=None, keyboard=f'[➕Добавить в группу](http://t.me/{me.username}?startgroup=new)')
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
     await startups

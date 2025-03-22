@@ -4,7 +4,7 @@ from typing import Any
 from aiogram import Router
 from aiogram.client import bot
 from aiogram.dispatcher.filters import Command, ContentTypesFilter
-from aiogram.exceptions import TelegramForbiddenError
+from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
 from aiogram.types import Message, CallbackQuery
 
 from Bot.config import db, admin_description
@@ -30,7 +30,7 @@ async def count(message: Message):
 @router.message(
     ContentTypesFilter(content_types="any"),
     ChatType(chat_type='private'),
-    CommandInMessage(command='/notificate')
+    CommandInMessage(command='/notify')
 )
 async def spread(message: Message, text: str, photo: Any, keyboard: list):
     users = db.get_users()
@@ -44,13 +44,17 @@ async def spread(message: Message, text: str, photo: Any, keyboard: list):
                     reply_markup=ConvertMarkdown(keyboard)
                 )
             else:
+
                 await bot.SendMessage(
                     chat_id=user['USER_ID'],
                     text=text,
                     reply_markup=ConvertMarkdown(keyboard)
                 )
-        except TelegramForbiddenError:
-            db.delete_user(user['USER_ID'])
+        #except TelegramForbiddenError:
+        #    db.delete_user(user['USER_ID'])
+        except Exception as e:
+            print(e, user)
+
     await bot.SendMessage(chat_id=message.from_user.id, text='✅Рассылка завершена')
 
 
@@ -82,7 +86,7 @@ async def remove(message: Message):
     lambda call: {'data': int(call.data.split('_')[-1])} if 'remove_' in call.data else None
 )
 async def callback(call: CallbackQuery, data):
-    title = db.get_replies()[data]['TITLE']
+    title = db.get_replies()[data-1]['TITLE']
     db.delete_reply(title=title)
     await bot.DeleteMessage(chat_id=call.message.chat.id, message_id=call.message.message_id)
     await bot.SendMessage(

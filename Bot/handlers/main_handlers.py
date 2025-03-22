@@ -6,7 +6,7 @@ from aiogram.client import bot
 from aiogram.dispatcher.filters import Command, ContentTypesFilter
 from aiogram.types import CallbackQuery, Message
 
-from Bot.config import db, description_2, mention_url, options
+from Bot.config import db, description_2, mention_url, options, description_1
 from Bot.filters import BotIsAdmin, ChatType, FromAdmin, ReplyFilter
 from Bot.markups import (
     BackMarkup,
@@ -37,11 +37,18 @@ async def start(message: Message):
     user = message.from_user
     db.add_user(user.id, user.username, user.first_name, user.last_name)
     await message.answer('👋', reply_markup=StandartMarkup())
-    option = db.get_reply('✅ Проверка подписки')
+    #option = db.get_reply('✅ Проверка подписки')
+    '''
     await bot.SendMessage(
         chat_id=message.from_user.id,
         text=option['DESCRIPTION'],
         reply_markup=ConvertMarkdown(option['KEYBOARD'].split(';'))
+    )
+    '''
+    await bot.SendMessage(
+        chat_id=message.from_user.id,
+        text=description_1,
+        reply_markup=StandartMarkup()
     )
 
 
@@ -63,9 +70,22 @@ async def button(message: Message, TITLE: str, DESCRIPTION: str, PHOTO: str, KEY
         )
 
 
-@router.message(ContentTypesFilter(content_types="text"), ChatType(chat_type='private'), lambda msg: msg.text.strip() == '⚙️Настройки чата')
+@router.message(
+    ContentTypesFilter(content_types="text"),
+    ChatType(chat_type='private'),
+    lambda msg: msg.text.strip() == '⚙️Настройки чата'
+)
 async def option(message: Message):
-    await bot.SendMessage(chat_id = message.from_user.id, text = description_2, reply_markup=ChatOptionsMarkup())
+    await bot.SendMessage(chat_id=message.from_user.id, text=description_2, reply_markup=ChatOptionsMarkup())
+
+
+@router.message(
+    ContentTypesFilter(content_types="text"),
+    ChatType(chat_type='private'),
+    lambda msg: msg.text.strip() == '✅Проверка подписки'
+)
+async def check_sub(message: Message):
+    await bot.SendMessage(chat_id=message.from_user.id, text=description_1)
 
 
 @router.callback_query(
@@ -103,13 +123,9 @@ async def answer_warning(chat_id: Union[str, int], text: str, time: int):
 async def handler(message: Message):
     chat_info = db.get_chat(message.chat.id)
     chat_joined_left = db.get_field('chats', 'JOINED_LEFT', 'CHAT_ID', message.chat.id)
-    for i in dict(message):
-        print(i, dict(message)[i])
-    print("-"*50)
     greeting = db.get_chat_greeting(message.chat.id)
-    print(greeting)
+
     if greeting and message.new_chat_members:
-        print("im working")
         text, photo, keyboard = greeting['TEXT'], greeting['PHOTO'], greeting['KEYBOARD']
         for member in message.new_chat_members:
             text = text.format(name=mention_url.format(member.id, member.first_name))
@@ -170,11 +186,8 @@ async def handler(message: Message):
 
         except Exception as e:
             print(e)
-    for i in dict(message):
-        print(i, dict(message)[i])
     if message.forward_date:#message.forward_sender_name or message.forward_from or 
         if chat_info.get("BLOCK_FORWARD"):
-            print("сырский")
             await bot.DeleteMessage(chat_id=message.chat.id, message_id=message.message_id)
             return await answer_warning(
                 message.chat.id,

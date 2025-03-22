@@ -5,7 +5,7 @@ from typing import Union
 
 
 def StandartMarkup():
-    keyboard = [[KeyboardButton(text = '⚙️Настройки чата')]]
+    keyboard = [[KeyboardButton(text="✅Проверка подписки"), KeyboardButton(text = '⚙️Настройки чата')]]
     for button in db.get_replies():
         btn = KeyboardButton(text = button['TITLE'])
         if len(keyboard[-1])<2:
@@ -16,8 +16,9 @@ def StandartMarkup():
 
 def RemoveFromStandartMarkup():
     markup = InlineKeyboardMarkup(inline_keyboard=[])
-    for ind, button in enumerate(db.get_replies()[1:], start=1):
-        btn = InlineKeyboardButton(text = button['TITLE'], callback_data=f'remove_{ind}')
+    replies = db.get_replies()
+    for ind, button in enumerate(db.get_replies(), start=1):
+        btn = InlineKeyboardButton(text=button['TITLE'], callback_data=f'remove_{ind}')
         markup.inline_keyboard.append([btn])
     return markup
 
