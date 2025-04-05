@@ -166,26 +166,31 @@ async def handler(message: Message):
     if channels:
         channels = channels.split()
         try:
+            left = False
+            left_channels = []
             for channel in channels:
                 user = await bot.GetChatMember(chat_id=channel, user_id=message.from_user.id)
                 if user.status == 'left':
-                    await bot.DeleteMessage(chat_id=message.chat.id, message_id=message.message_id)
+                    left_channels.append(channel)
+                    left = True
+            if left:
+                await bot.DeleteMessage(chat_id=message.chat.id, message_id=message.message_id)
 
-                    markup = []
-                    for i in range(len(channels)):
-                        markup.append(f"[➕Подпишитесь {i+1}](t.me/{channels[i][1:]})")
+                markup = []
+                for i in range(len(left_channels)):
+                    markup.append(f"[➕Подпишитесь {i + 1}](t.me/{left_channels[i][1:]})")
 
-                    return await bot.SendMessage(
-                        chat_id=message.chat.id,
-                        text=f'➕{mention_url.format(message.from_user.id, message.from_user.first_name)}'
-                             f', чтобы писать в этот чат, подпишитесь на каналы:\n'
-                             f"{'|'.join(channels)}",
-                        reply_markup=ConvertMarkdown(markup)
-                        #reply_markup=ConvertMarkdown(f'[➕Подпишитесь](t.me/{channel[1:]})')
-                    )
+                return await bot.SendMessage(
+                    chat_id=message.chat.id,
+                    text=f'➕{mention_url.format(message.from_user.id, message.from_user.first_name)}'
+                         f', чтобы писать в этот чат, подпишитесь на каналы:\n'
+                         f"{'|'.join(left_channels)}",
+                    reply_markup=ConvertMarkdown(markup)
+                    # reply_markup=ConvertMarkdown(f'[➕Подпишитесь](t.me/{channel[1:]})')
+                )
 
         except Exception as e:
-            print(e)
+            print(e, )
     if message.forward_date:#message.forward_sender_name or message.forward_from or 
         if chat_info.get("BLOCK_FORWARD"):
             await bot.DeleteMessage(chat_id=message.chat.id, message_id=message.message_id)
