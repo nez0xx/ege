@@ -2,7 +2,7 @@ from .database import DataBase
 
 db = DataBase('database.db')
 
-BOT_TOKEN = '6290562371:AAHuwiTozcX1ObTHZQGLMJ9a5rKAiuNi_YA'
+BOT_TOKEN = '8163584709:AAEbwGcINkuQSbIPngCOpp1RwyckCbU1XJc'
 
 mention_url = '<a href="tg://user?id={}">{}</a>'
 

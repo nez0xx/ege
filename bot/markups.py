@@ -38,9 +38,17 @@ def ConvertMarkdown(buttons: Union[str, list]):
     markup = InlineKeyboardMarkup(inline_keyboard=[])
     if isinstance(buttons, str):
         buttons = buttons.split(';')
+    btns_list = [[]]
     for button in buttons:
         if not len(button.strip()):
             continue
         text, url = button[1:-1].split('](')
-        markup.inline_keyboard.append([InlineKeyboardButton(text=text, url=url)])
+        if len(btns_list[-1]) < 2:
+            btns_list[-1].append(InlineKeyboardButton(text=text, url=url))
+        else:
+            btns_list.append([InlineKeyboardButton(text=text, url=url)])
+
+    for row in btns_list:
+
+        markup.inline_keyboard.append(row)
     return markup

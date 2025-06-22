@@ -19,6 +19,7 @@ async def startup():
     loop = asyncio.get_event_loop()
     for timer in timers:
         values = list(timer.values())
+        print(len(values), *values, sep="_")
         db.set_timer(*values)
         loop.create_task(create_task(timer, bot))
 

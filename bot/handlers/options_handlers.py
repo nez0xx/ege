@@ -15,38 +15,42 @@ router = Router()
 
 
 async def create_task(timer: dict, Bot: Bot = None):
-    if timer['PHOTO']:
-        if Bot:
-            await Bot.send_photo(
-                chat_id = timer['CHAT_ID'],
-                caption = timer['TEXT'],
-                photo=timer['PHOTO'],
-                reply_markup=ConvertMarkdown(timer['KEYBOARD'])
-            )
+    try:
+
+        if timer['PHOTO']:
+            if Bot:
+                await Bot.send_photo(
+                    chat_id = timer['CHAT_ID'],
+                    caption = timer['TEXT'],
+                    photo=timer['PHOTO'],
+                    reply_markup=ConvertMarkdown(timer['KEYBOARD'])
+                )
+            else:
+                await bot.SendPhoto(
+                    chat_id = timer['CHAT_ID'],
+                    caption = timer['TEXT'],
+                    photo=timer['PHOTO'],
+                    reply_markup=ConvertMarkdown(timer['KEYBOARD'])
+                )
         else:
-            await bot.SendPhoto(
-                chat_id = timer['CHAT_ID'],
-                caption = timer['TEXT'],
-                photo=timer['PHOTO'],
-                reply_markup=ConvertMarkdown(timer['KEYBOARD'])
-            )
-    else:
-        if Bot:
-            await Bot.send_message(
-                chat_id=timer['CHAT_ID'],
-                text=timer['TEXT'],
-                reply_markup=ConvertMarkdown(timer['KEYBOARD'])
-            )
-        else:
-            await bot.SendMessage(
-                chat_id=timer['CHAT_ID'],
-                text=timer['TEXT'],
-                reply_markup=ConvertMarkdown(timer['KEYBOARD'])
-            )
-    await asyncio.sleep(timer['DELAY']*60)
-    timer = db.get_chat_timer(timer['CHAT_ID'])
-    if timer:
-        await create_task(timer, Bot)
+            if Bot:
+                await Bot.send_message(
+                    chat_id=timer['CHAT_ID'],
+                    text=timer['TEXT'],
+                    reply_markup=ConvertMarkdown(timer['KEYBOARD'])
+                )
+            else:
+                await bot.SendMessage(
+                    chat_id=timer['CHAT_ID'],
+                    text=timer['TEXT'],
+                    reply_markup=ConvertMarkdown(timer['KEYBOARD'])
+                )
+        await asyncio.sleep(timer['DELAY']*60)
+        timer = db.get_chat_timer(timer['CHAT_ID'])
+        if timer:
+            await create_task(timer, Bot)
+    except Exception as e:
+        print(">>>>>>>>>>>>>>ERROR>>>>>>>>>>>>>>> ",e)
 
 
 @router.message(

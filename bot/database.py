@@ -23,7 +23,7 @@ class DataBase():
         self.add_user = lambda user_id, username, first_name, last_name: self.add('users', user_id, username, first_name, last_name)
 
         self.set_greeting = lambda chat_id, text, photo, keyboard: self.add('greetings', chat_id, text, photo, keyboard)
-        self.set_timer = lambda chat_id, text, photo, keyboard, delay: self.add('timers', chat_id, text, photo, keyboard, delay)
+        self.set_timer = lambda chat_id, text, photo, keyboard, delay, started: self.add('timers', chat_id, text, photo, keyboard, delay)
 
         self.delete_user = lambda user_id: self.delete('users', 'USER_ID', user_id)
         self.delete_timer = lambda chat_id: self.delete('timers', 'CHAT_ID', chat_id)
